@@ -36,14 +36,15 @@ class Pcb
 		stack<uint16_t> stack;  // Stack containing temporary data such as function parameters, return addresses, and local variables
 		vector<uint16_t> heap; // Heap containing memory dynamically allocated during runtime
 
-	// Default constructor
-	Pcb(vector<string> text, int memoryAmount, int registerCount)
-	{
-		setId();
-		setText(text);
-		setMemory(memoryAmount);
-		initRegisters(registerCount);
-	}
+	public:
+		// Default constructor
+		Pcb(vector<string> text, int memoryAmount, int registerCount)
+		{
+			setId();
+			setText(text);
+			setMemory(memoryAmount);
+			initRegisters(registerCount);
+		}
 
 	private:
 		void setId()

@@ -3,7 +3,6 @@
  */
 #include <iostream>
 #include <cmath>
-#include "pcb.cpp"
 using namespace std;
 
 class Cpu
@@ -35,6 +34,13 @@ class Cpu
 		};
 
 		uint16_t registers[RCOUNT];
+
+
+	public:
+		Cpu()
+		{
+
+		}
 
 	private:
 		void calc()
