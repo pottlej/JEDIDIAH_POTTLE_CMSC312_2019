@@ -1,75 +1,84 @@
 /*
  * cpu.cpp
+ * Central Processing Unit
  */
-#include <iostream>
+#include <algorithm>
 #include <cmath>
+#include "cpu.h"
 using namespace std;
 
-class Cpu
+// Public Members
+Cpu::Cpu(size_t cacheSize, Memory *memoryMain)
 {
-	private:
-		// Establishes operation codes that can be used.
-		enum
-		{
-			OP_CALC,
-			OP_IO,
-			OP_YIELD,
-			OP_OUT
-		};
+	setCacheSize(cacheSize);
+	setMemoryMain(memoryMain);
+	initRegisters();
+}
 
-	public:
-		// Establishes registers.
-		enum
-		{
-			R0,
-			R1,
-			R2,
-			R3,
-			R4,
-			R5,
-			R6,
-			R7,
-			RPC,
-			RCOUNT
-		};
+Cpu::~Cpu()
+{
+	free(registers);
+}
 
-		uint16_t registers[RCOUNT];
+void Cpu::writeCache(unsigned int tag, unsigned int data)
+{
+	cache[tag] = data;
+}
+
+unsigned int Cpu::readCache(unsigned int tag)
+{
+	unordered_map<unsigned int, unsigned int>::const_iterator found = cache.find(tag);
+	if (found == cache.end())
+	{
+		return numeric_limits<unsigned int>::max();
+	}
+	return found->second;
+}
+
+void Cpu::writeMemory(unsigned int address, unsigned int instruction)
+{
+	memoryMain->write(address, instruction);
+}
+
+unsigned int Cpu::readMemory(unsigned int address)
+{
+	return memoryMain->read(address);
+}
 
 
-	public:
-		Cpu()
-		{
+//Private Members
+void Cpu::setCacheSize(size_t size)
+{
+	this->cacheSize = size;
+}
 
-		}
+void Cpu::setMemoryMain(Memory *memoryMain)
+{
+	this->memoryMain = memoryMain;
+}
 
-	private:
-		void calc()
-		{
+void Cpu::initRegisters()
+{
+	registers = (unsigned int*) calloc(R_COUNT, sizeof(unsigned int));
+}
 
-		}
+void Cpu::calc()
+{
 
-		void io()
-		{
-			//rand() % 25 + 25;
-		}
+}
 
-		void yield()
-		{
+void Cpu::io()
+{
+	//rand() % 25 + 25;
+}
 
-		}
+void Cpu::yield()
+{
 
-		void out()
-		{
+}
 
-		}
+void Cpu::out()
+{
 
-	public:
-		int getRegisters()
-		{
-			return RCOUNT;
-		}
-		//Control Unit: extracts instructions from memory
-		//and decodes and executes them
-
-};
+}
 

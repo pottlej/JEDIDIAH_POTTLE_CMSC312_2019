@@ -1,44 +1,69 @@
 /*
  * memory.cpp
  */
-#include <cmath>
-#include <cstdint>
 #include <iostream>
+#include <cmath>
+#include "memory.h"
 using namespace std;
 
-class Memory
+//Public members
+// Default constructor
+Memory::Memory(){}
+
+// Parameter constructor
+Memory::Memory(uint64_t size)
 {
-	private:
-		uint16_t* memory; // Represents memory locations which store 16-bit values each.
+	setMemory(size);
+}
 
-	public:
-		// Default constructor
-		Memory(long long int size)
-		{
-			setMemory(size);
-		}
+// Deconstructor
+Memory::~Memory()
+{
+	free(memory);
+}
 
-	private:
-		void setMemory(long long int size)
-		{
-			// Calculates number of memory locations needed.
-			int exp = ceil(log2(size/2));
-			long long int numLocations = pow(2, exp);
-			//cout << "locations: " << numLocations << endl;
-			memory = new uint16_t[numLocations];
-		}
+uint64_t Memory::getAddressSpace()
+{
+	return space;
+}
 
-	public:
-		void write(uint16_t address, uint16_t instruction)
-		{
-		    memory[address] = instruction;
-		}
+void Memory::write(uint64_t address, uint64_t instruction)
+{
+	memory[address] = instruction;
+}
 
-		uint16_t read(uint16_t address)
-		{
-		    return memory[address];
-		}
-};
+uint64_t Memory::read(uint64_t address)
+{
+	return memory[address];
+}
+
+// Private members
+void Memory::setMemory(uint64_t size)
+{
+	cout << "size: " << size << endl;
+
+	/*
+	// Calculates number of memory locations needed.
+	int exp = ceil(log2(size/2));
+	unsigned long int numAddresses = pow(2, exp);
+	cout << "addresses: " << numAddresses << endl;
+	*/
+
+	uint64_t numAddresses = size / sizeof(uint64_t);
+	space = numAddresses;
+	//cout << "addresses: " << numAddresses << endl;
+
+	memory = (uint64_t*) malloc(numAddresses);
+
+	// Makes sure memory is eventually allocated.
+	if (memory == NULL)
+	{
+		cout << "memory not set" << endl;
+		free(memory);
+		setMemory(size);
+	}
+	cout << "memory set" << endl;
+}
 
 
 

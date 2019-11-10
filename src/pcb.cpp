@@ -1,173 +1,264 @@
 /*
  * pcb.cpp
+ * Process Control Block
  */
 #include <algorithm>
-#include <limits>
-#include <list>
-#include <stack>
-#include <string>
-#include <time.h>
-#include <vector>
+#include <iostream>
+#include "pcb.h"
 using namespace std;
 
-class Pcb
+// Public Members
+// Constructor
+Pcb::Pcb(string name, size_t burstTime, uint64_t memoryAmount, size_t registerCount, unordered_set<unsigned int> *pids, vector<string> text)
 {
-	private:
-		unsigned int id;
+	setId(pids);
+	setName(name);
+	setMemory(memoryAmount);
+	setBurstTime(burstTime);
+	initRegisters(registerCount);
+	setText(text);
+}
 
-		/*
-		 * states:
-		 * NEW – The program or process is being created or loaded (but not yet in memory).
-		 * READY – The program is loaded into memory and is waiting to run on the CPU.
-		 * RUN – Instructions are being executed (or simulated).
-		 * WAIT (BLOCKED) – The program is waiting for some event to occur (such as an I/O completion).
-		 * EXIT – The  program  has  finished  execution  on  the  CPU  (all  instructions  and I/O complete) and leaves memory.
-		*/
-		short state;
-		int counter = 0x0000;
-		int priority;
-		int memory; // Amount of memory allocated to process
-		int elapsedSeconds;
-		list<string> ioList; // I/O devices allocated to process
-		list<string> fileList;  // List of open files
-		vector<uint16_t> registers; // Contains register contents.
-		vector<string> text;
-		vector<string> data; // Contains global variables
-		stack<uint16_t> stack;  // Stack containing temporary data such as function parameters, return addresses, and local variables
-		vector<uint16_t> heap; // Heap containing memory dynamically allocated during runtime
+Pcb::~Pcb()
+{
+	//delete[] registers;
+	free(registers);
+}
 
-	public:
-		// Default constructor
-		Pcb(vector<string> text, int memoryAmount, int registerCount)
+unsigned int Pcb::getId()
+{
+	return id;
+}
+
+void Pcb::setState(unsigned short s)
+{
+	state = s;
+}
+
+unsigned short Pcb::getState()
+{
+	return state;
+}
+
+void Pcb::setCritSection(bool value)
+{
+	critSection = value;
+}
+
+bool Pcb::getCritSection()
+{
+	return critSection;
+}
+
+void Pcb::setPC(uint64_t pc)
+{
+	this->pc = pc;
+}
+
+uint64_t Pcb::getPC()
+{
+	return pc;
+}
+
+void Pcb::setPriority(unsigned short pr)
+{
+	priority = pr;
+}
+
+unsigned short Pcb::getPriority()
+{
+	return priority;
+}
+
+void Pcb::setName(std::string name)
+{
+	this->name = name;
+}
+
+std::string Pcb::getName()
+{
+	return name;
+}
+
+void Pcb::setMemory(uint64_t amount)
+{
+	memory = amount;
+}
+
+uint64_t Pcb::getMemory()
+{
+	return memory;
+}
+
+void Pcb::setBurstTime(size_t time)
+{
+	burstTime = time;
+}
+
+size_t Pcb::getBurstTime()
+{
+	return burstTime;
+}
+
+void Pcb::setText(vector<string> text)
+{
+	/*
+	string* begin = text; // Stores beginning address of array.
+	string* end = *(&text + 1); // Stores ending address of array.
+	int size = end - begin;
+	this->text = new string[size];
+	copy(begin, end, this->text);
+	*/
+	this->text = text;
+}
+
+vector<string> Pcb::getText()
+{
+	return text;
+}
+
+string Pcb::getTextLine(uint64_t line)
+{
+	return text.at(line);
+}
+
+void Pcb::setData(vector<uint64_t> data)
+{
+	this->data = data;
+}
+
+vector<uint64_t> Pcb::getData()
+{
+	return data;
+}
+
+void Pcb::ioListAdd(string element)
+{
+	listAdd(ioList, element);
+}
+
+void Pcb::ioListRemove(string element)
+{
+	listRemove(ioList, element);
+}
+
+void Pcb::ioListRemoveAll()
+{
+	listRemoveAll(ioList);
+}
+
+bool Pcb::ioListFind(string element)
+{
+	return listFind(ioList, element);
+}
+
+void Pcb::fileListAdd(string element)
+{
+	listAdd(fileList, element);
+}
+
+void Pcb::fileListRemove(string element)
+{
+	listRemove(fileList, element);
+}
+
+void Pcb::fileListRemoveAll()
+{
+	listRemoveAll(fileList);
+}
+
+bool Pcb::fileListFind(string element)
+{
+	return listFind(fileList, element);
+}
+
+void Pcb::stackPush(uint64_t value)
+{
+	stack.push(value);
+}
+
+void Pcb::stackPop()
+{
+	stack.pop();
+}
+
+uint64_t Pcb::stackTop()
+{
+	return stack.top();
+}
+
+void Pcb::heapPush(uint64_t value)
+{
+	heap.push_back(value);
+	if (!is_heap(heap.begin(), heap.end()))
+	{
+		make_heap(heap.begin(), heap.end());
+	}
+	push_heap(heap.begin(), heap.end());
+}
+
+void Pcb::heapPop()
+{
+	pop_heap(heap.begin(), heap.end());
+	heap.pop_back();
+}
+
+uint64_t Pcb::heapFront()
+{
+	return heap.front();
+}
+
+
+// Private Members
+void Pcb::setId(unordered_set<unsigned int> *pids)
+{
+	unsigned int max = numeric_limits<unsigned int>::max();
+
+	while (id == 0)
+	{
+		unsigned int val = (rand() % (max - 1)) + 1;
+
+		unordered_set<unsigned int>::const_iterator found = pids->find(val);
+		if (found == pids->end())
 		{
-			setId();
-			setText(text);
-			setMemory(memoryAmount);
-			initRegisters(registerCount);
-		}
-
-	private:
-		void setId()
-		{
-			unsigned int max = std::numeric_limits<unsigned int>::max();
-			unsigned int val = rand() % max;
 			id = val;
+			pids->insert(id);
+			break;
 		}
+	}
+}
 
-		void setText(vector<string> text)
-		{
-			this->text = text;
-		}
+void Pcb::initRegisters(size_t count)
+{
+	registers = (uint64_t*) calloc(count, sizeof(uint64_t));
+}
 
-		void setMemory(int amount)
-		{
-			memory = amount;
-		}
+bool Pcb::listAdd(list<string> container, string element)
+{
+	bool exists = listFind(container, element);
+	if (!exists)
+		container.insert(container.begin(), element);
+	return exists;
+}
 
-		void initRegisters(int count)
-		{
-			registers.resize(count);
-		}
-		/*
-		void setTime()
-		{
+bool Pcb::listRemove(list<string> container, string element)
+{
+	bool exists = listFind(container, element);
+	if (exists)
+		container.remove(element);
+	return exists;
+}
 
-		}*/
+bool Pcb::listRemoveAll(list<string> container)
+{
+	container.erase(container.begin(), container.end());
+	return container.empty();
+}
 
-	public:
-		int getId()
-		{
-			return id;
-		}
-
-		void setState(short s)
-		{
-			state = s;
-		}
-
-		int getState()
-		{
-			return this->state;
-		}
-
-		void setCounter(int pc)
-		{
-			counter++;
-		}
-
-		int getCounter()
-		{
-			return counter;
-		}
-
-		void setPriority(int pr)
-		{
-			priority = pr;
-		}
-
-		int getPriority()
-		{
-			return priority;
-		}
-
-		void ioListAdd(string str) {
-			ioList.insert(ioList.begin(), str);
-		}
-
-		void ioListRemove(string str) {
-			ioList.remove(str);
-		}
-
-		void fileListAdd(string str) {
-			fileList.insert(fileList.begin(), str);
-		}
-
-		void fileListRemove(string str) {
-			fileList.remove(str);
-		}
-
-		vector<string> getText()
-		{
-			return text;
-		}
-
-		void setData(vector<string> data)
-		{
-			this->data = data;
-		}
-
-		vector<string> getData()
-		{
-			return data;
-		}
-
-		void stackPush(int v) {
-			stack.push(v);
-		}
-
-		void stackPop() {
-			stack.pop();
-		}
-
-		int stackTop() {
-			return stack.top();
-		}
-
-		void heapPush(int v) {
-			heap.push_back(v);
-			if (!std::is_heap(heap.begin(), heap.end()))
-				std::make_heap(heap.begin(), heap.end());
-			std::push_heap(heap.begin(), heap.end());
-		}
-
-		void heapPop() {
-			std::pop_heap(heap.begin(), heap.end());
-			heap.pop_back();
-		}
-
-		int heapFront() {
-			return heap.front();
-		}
-};
+bool Pcb::listFind(list<string> container, string element)
+{
+	bool found = (find(container.begin(), container.end(), element) != container.end());
+	return found;
+}
 
 
