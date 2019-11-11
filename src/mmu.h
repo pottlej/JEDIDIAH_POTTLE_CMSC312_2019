@@ -10,8 +10,8 @@
 class Mmu
 {
 	public:
-		unsigned int numFrames { 0 };
-		unsigned int numPages { 0 };
+		uint64_t numFrames { 0 };
+		uint64_t numPages { 0 };
 
 	private:
 		/*
@@ -22,7 +22,7 @@ class Mmu
 			void *memoryAddress;
 		}_PAGETABLEENTRY;
 		*/
-		std::unordered_map<unsigned int, unsigned int> pageTable;
+		std::unordered_map<int, std::pair<int, bool>> pageTable;
 
 	public:
 		Mmu(uint64_t physicalSpace, uint64_t virtualSpace, uint64_t blockSize);

@@ -147,19 +147,21 @@ void close()
 int main()
 {
 	#define SIZE_MEMORY_MAIN 4294967296 // Represents size of main memory in bytes (4096 MiB).
-	#define SIZE_MEMORY_VIRTUAL 6442450944 // Represents size of virtual memory in bytes (6144 MiB).
+	#define SIZE_MEMORY_VIRTUAL 8589934592 // Represents size of virtual memory in bytes (8192 MiB).
 	#define SIZE_CACHE_CPU 1024 // Represents size of CPU cache in bytes (1 KiB).
-	#define SIZE_BLOCK 8192 // Represents size of paging block in bytes (8 MiB).
+	#define SIZE_BLOCK 4194304 // Represents size of paging block in bytes (4 MiB).
 
 	// Main Memory
 	Memory memoryMain = Memory(SIZE_MEMORY_MAIN);
 	Memory *ptrMain = &memoryMain;
-	uint64_t spaceMain = memoryMain.getAddressSpace();
+	uint64_t spaceMain = memoryMain.getAddressSpace(); // 2^29 space
+	cout << "main: " << spaceMain << endl;
 
 	// Virtual Memory
 	Memory memoryVirtual = Memory(SIZE_MEMORY_VIRTUAL);
 	Memory *ptrVirtual = &memoryVirtual;
-	uint64_t spaceVirtual = memoryVirtual.getAddressSpace();
+	uint64_t spaceVirtual = memoryVirtual.getAddressSpace(); // 2^30 space
+	cout << "virtual: " << spaceVirtual << endl;
 
 	// Memory Management Unit
 	Mmu mmu = Mmu(spaceMain, spaceVirtual, SIZE_BLOCK);

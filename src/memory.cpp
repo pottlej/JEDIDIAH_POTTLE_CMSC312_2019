@@ -40,8 +40,6 @@ uint64_t Memory::read(uint64_t address)
 // Private members
 void Memory::setMemory(uint64_t size)
 {
-	cout << "size: " << size << endl;
-
 	/*
 	// Calculates number of memory locations needed.
 	int exp = ceil(log2(size/2));
@@ -51,7 +49,6 @@ void Memory::setMemory(uint64_t size)
 
 	uint64_t numAddresses = size / sizeof(uint64_t);
 	space = numAddresses;
-	//cout << "addresses: " << numAddresses << endl;
 
 	memory = (uint64_t*) malloc(numAddresses);
 
