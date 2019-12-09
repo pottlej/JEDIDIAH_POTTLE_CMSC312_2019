@@ -7,59 +7,47 @@
 using namespace std;
 
 //Public members
-// Default constructor
 Memory::Memory(){}
 
-// Parameter constructor
 Memory::Memory(uint64_t size)
 {
 	setMemory(size);
 }
 
-// Deconstructor
 Memory::~Memory()
 {
 	free(memory);
+	memorySet = 0;
 }
 
-uint64_t Memory::getAddressSpace()
-{
-	return space;
-}
-
+// Writes an instruction to an address location.
 void Memory::write(uint64_t address, uint64_t instruction)
 {
 	memory[address] = instruction;
 }
 
+// Returns an instruction from an address location.
 uint64_t Memory::read(uint64_t address)
 {
 	return memory[address];
 }
 
+
+
 // Private members
 void Memory::setMemory(uint64_t size)
 {
-	/*
-	// Calculates number of memory locations needed.
-	int exp = ceil(log2(size/2));
-	unsigned long int numAddresses = pow(2, exp);
-	cout << "addresses: " << numAddresses << endl;
-	*/
-
 	uint64_t numAddresses = size / sizeof(uint64_t);
-	space = numAddresses;
 
 	memory = (uint64_t*) malloc(numAddresses);
+	memorySet = 1;
 
-	// Makes sure memory is eventually allocated.
-	if (memory == NULL)
+	// Tests memory for allocation.
+	if (memory == 0)
 	{
-		cout << "memory not set" << endl;
 		free(memory);
-		setMemory(size);
+		memorySet = 0;
 	}
-	cout << "memory set" << endl;
 }
 
 

@@ -8,21 +8,24 @@
 using namespace std;
 
 // Public Members
-// Constructor
-Pcb::Pcb(string name, size_t burstTime, uint64_t memoryAmount, size_t registerCount, unordered_set<unsigned int> *pids, vector<string> text)
+Pcb::Pcb(unsigned int id, string name, size_t burst, uint64_t memory, vector<string> text, size_t numRegisters)
 {
-	setId(pids);
+	setId(id);
 	setName(name);
-	setMemory(memoryAmount);
-	setBurstTime(burstTime);
-	initRegisters(registerCount);
+	setBurstTime(burst);
+	setMemory(memory);
 	setText(text);
+	initRegisters(numRegisters);
 }
 
 Pcb::~Pcb()
 {
-	//delete[] registers;
 	free(registers);
+}
+
+void Pcb::setId(unsigned int id)
+{
+	this->id = id;
 }
 
 unsigned int Pcb::getId()
@@ -80,16 +83,6 @@ std::string Pcb::getName()
 	return name;
 }
 
-void Pcb::setMemory(uint64_t amount)
-{
-	memory = amount;
-}
-
-uint64_t Pcb::getMemory()
-{
-	return memory;
-}
-
 void Pcb::setBurstTime(size_t time)
 {
 	burstTime = time;
@@ -98,6 +91,16 @@ void Pcb::setBurstTime(size_t time)
 size_t Pcb::getBurstTime()
 {
 	return burstTime;
+}
+
+void Pcb::setMemory(uint64_t amount)
+{
+	memory = amount;
+}
+
+uint64_t Pcb::getMemory()
+{
+	return memory;
 }
 
 void Pcb::setText(vector<string> text)
@@ -209,25 +212,8 @@ uint64_t Pcb::heapFront()
 }
 
 
+
 // Private Members
-void Pcb::setId(unordered_set<unsigned int> *pids)
-{
-	unsigned int max = numeric_limits<unsigned int>::max();
-
-	while (id == 0)
-	{
-		unsigned int val = (rand() % (max - 1)) + 1;
-
-		unordered_set<unsigned int>::const_iterator found = pids->find(val);
-		if (found == pids->end())
-		{
-			id = val;
-			pids->insert(id);
-			break;
-		}
-	}
-}
-
 void Pcb::initRegisters(size_t count)
 {
 	registers = (uint64_t*) calloc(count, sizeof(uint64_t));

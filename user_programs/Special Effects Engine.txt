@@ -1,0 +1,14 @@
+Name:Special Effects Engine
+Total runtime:1500
+Memory:100
+
+CALCULATE 10
+CALCULATE 10
+SECTION
+I/0
+I/0
+I/0
+I/0
+SECTION
+YIELD
+EXE

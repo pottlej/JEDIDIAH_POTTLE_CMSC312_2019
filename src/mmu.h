@@ -5,33 +5,44 @@
 
 #ifndef MMU_H_
 #define MMU_H_
+#include <set>
 #include <unordered_map>
 
 class Mmu
 {
-	public:
+	private:
 		uint64_t numFrames { 0 };
 		uint64_t numPages { 0 };
 
-	private:
-		/*
 		// Represents structure for a Page Table entry.
-		typedef struct __pagetableentry{
-			struct __pagetableentry *next;
-			unsigned int pageNum;
-			void *memoryAddress;
-		}_PAGETABLEENTRY;
-		*/
-		std::unordered_map<int, std::pair<int, bool>> pageTable;
+		struct _page
+		{
+			struct _page *next { 0 };
+			uint64_t pageNum { 0 };
+			bool isVal { 0 }; // Valid or Invalid bit.
+			bool isRef { 0 }; // Referenced bit.
+			bool isMod { 0 }; // Modified bit.
+			uint64_t baseAddress { 0 };
+		};
+
+		_page *pageTable { 0 };
+
+		// Keeps track of free frames in ascending order.
+		std::set<uint64_t, std::less<uint64_t>> freeFrames { 0 };
 
 	public:
-		Mmu(uint64_t physicalSpace, uint64_t virtualSpace, uint64_t blockSize);
+		Mmu(uint64_t blockSize, uint64_t physicalSpace, uint64_t logicalSpace);
 		uint64_t getNumFrames();
 		uint64_t getNumPages();
+		void addPageData(uint64_t pageNum, uint64_t baseAddress);
+		void removePageData(uint64_t pageNum);
 
 	private:
-		void setNumFrames(uint64_t physicalSpace, uint64_t size);
-		void setNumPages(uint64_t logicalSpace, uint64_t size);
+		void setNumFrames(uint64_t physicalSpace, uint64_t blockSize);
+		void setNumPages(uint64_t logicalSpace, uint64_t blockSize);
+		void initPageTable(uint64_t size);
+		void addFreeFrame(uint64_t pageNum);
+		void removeFreeFrame(uint64_t pageNum);
 };
 
 #endif /* MMU_H_ */

@@ -20,27 +20,27 @@ Cpu::~Cpu()
 	free(registers);
 }
 
-void Cpu::writeCache(unsigned int tag, unsigned int data)
+void Cpu::writeCache(uint64_t tag, uint64_t instruction)
 {
-	cache[tag] = data;
+	cache[tag] = instruction;
 }
 
-unsigned int Cpu::readCache(unsigned int tag)
+uint64_t Cpu::readCache(uint64_t tag)
 {
-	unordered_map<unsigned int, unsigned int>::const_iterator found = cache.find(tag);
+	unordered_map<uint64_t, uint64_t>::const_iterator found = cache.find(tag);
 	if (found == cache.end())
 	{
-		return numeric_limits<unsigned int>::max();
+		return numeric_limits<uint64_t>::max();
 	}
 	return found->second;
 }
 
-void Cpu::writeMemory(unsigned int address, unsigned int instruction)
+void Cpu::writeMemory(uint64_t address, uint64_t instruction)
 {
 	memoryMain->write(address, instruction);
 }
 
-unsigned int Cpu::readMemory(unsigned int address)
+uint64_t Cpu::readMemory(uint64_t address)
 {
 	return memoryMain->read(address);
 }
