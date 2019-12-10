@@ -37,31 +37,6 @@ string HardDrive::getFilename()
 	return filename;
 }
 
-/*
-bool HardDrive::writeId(uint64_t address, unsigned int id)
-{
-	bool success = false;
-	if (address < capacity)
-	{
-		harddrive.open(filename);
-		if (harddrive)
-		{
-			uint64_t line = address * 22;
-			harddrive.seekp(line);
-			harddrive << "10000000000000000000" << endl; // Adds ID recognizer line.
-
-			uint64_t loc = getLoc(address, id);
-			harddrive.seekp(loc);
-			harddrive << id << endl;
-			success = true;
-		}
-		harddrive.close();
-	}
-
-	return success;
-}
-*/
-
 bool HardDrive::write(uint64_t base, int offset, uint64_t instruction)
 {
 	uint64_t address = base + offset;

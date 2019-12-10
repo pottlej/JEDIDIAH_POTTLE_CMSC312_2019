@@ -193,9 +193,6 @@ int main()
 	Memory *ptrMain = &memoryMain; // Points to memoryMain.
 	uint64_t spaceMain = memoryMain.getCapacity();
 
-	// Virtual Memory
-	uint64_t spaceVirtual = getAddressSpace(SIZE_MEMORY_VIRTUAL);
-
 	// Backing Store (Hard Disk Drive)
 	fstream harddrive;
 	HardDrive hdd = HardDrive(harddrive, SIZE_BACKING_STORE, SIZE_BLOCK);
@@ -205,7 +202,10 @@ int main()
 		close(2);
 	}
 
-	bootstrap(hdd); // Writes built-in functions to hard drive.
+	//bootstrap(hdd); // Writes built-in functions to hard drive.
+
+	// Virtual Memory
+	uint64_t spaceVirtual = getAddressSpace(SIZE_MEMORY_VIRTUAL);
 
 	// Memory Management Unit
 	Mmu mmu = Mmu(SIZE_BLOCK, spaceMain, spaceVirtual);
