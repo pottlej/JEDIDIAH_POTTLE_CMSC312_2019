@@ -1,110 +1,69 @@
 /*
  * main.cpp
+ *
+ * Jedidiah Pottle
+ * CMSC312
  */
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <iterator>
 #include <fstream>
-//#include <limits.h> // UINT_MAX
 #include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
 #include "cpu.h"
-#include "linkedlist.h"
+#include "harddrive.h"
 #include "memory.h"
 #include "mmu.h"
 #include "pcb.h"
 #include "schedulerlong.h"
 using namespace std;
 
-/*
-string removeWhiteSpace(string str)
-{
-	//string output = str;
-	//cout << output;
-	//char whitespace[6] = {' ', '\t', '\n', '\v', '\f', '\r'};
-	//int size = *(&whitespace + 1) - whitespace;
-	string::iterator end = remove(str.begin(), str.end(), ' '); // Locates end of whitespace.
-	str.erase(end, str.end());
-	return str;
-}
-*/
+#define SIZE_MEMORY_MAIN 4096 // Represents size of main memory.
+#define SIZE_MEMORY_VIRTUAL 6144 // Represents size of virtual memory.
+#define SIZE_BACKING_STORE 8192 // Represents size of backing store.
+#define SIZE_CACHE_CPU 1024 // Represents size of CPU cache.
+#define SIZE_BLOCK 4 // Represents size of paging block.
 
-/*
-string stripWhiteSpace(string str)
+// Establishes operation codes that can be used.
+enum
 {
-	size_t i = 0; // Holds beginning of string without leading whitespace.
-	size_t j = str.length() - 1; // Holds ending of string without trailing whitespace.
-	if (str.compare("") != 0)
+	CALC = 0,
+	IO,
+	YIELD,
+	OUT,
+	SECTION
+};
+
+// Delimits a string by a desired string and returns the desired value.
+string getValue(string str, bool second, string delim)
+{
+	size_t pos = 0;
+	string token;
+
+	if (second)
 	{
-		// Iterates from start of string.
-		for (i = 0; i < str.length(); i++)
+		while ((pos = str.find(delim)) != string::npos)
 		{
-			if (str[i] != ' ')
-			{
-				break;
-			}
-		}
-
-		if (i >= j)
-		{
-			return "";
-		}
-
-		// Iterates from end of string.
-		for (j = str.length() - 1; j >= 0; j--)
-		{
-			if (str[j] != ' ')
-			{
-				break;
-			}
+			str.erase(0, pos + delim.length());
 		}
 	}
 	else
 	{
-		return "";
+		while ((pos = str.find(delim)) != string::npos)
+		{
+			str.erase(pos, string::npos);
+		}
 	}
 
-	return str.substr(i, (j - i) + 1);
-}
-*/
-
-string delimitValue(string str, string delim)
-{
-	size_t pos = 0;
-	string token;
-	while ((pos = str.find(delim)) != string::npos)
-	{
-	    str.erase(0, pos + delim.length());
-	}
-
-	//token = stripWhiteSpace(str);
 	token = str;
 
 	return token;
 }
 
-/*
-vector<string> delimit(string str, string delim)
-{
-	size_t pos = 0;
-	vector<string> tokens;
-	while ((pos = str.find(delim)) != string::npos)
-	{
-		string token = str.substr(0, pos);
-		token = stripWhiteSpace(token);
-	    tokens.push_back(token);
-	    str.erase(0, pos + delim.length());
-	}
-	str = stripWhiteSpace(str);
-	tokens.push_back(str);
-
-	return tokens;
-}
-*/
-
+// Gets the number of addresses pertaining to the memory size.
 uint64_t getAddressSpace(uint64_t memorySize)
 {
 	uint64_t space = memorySize / sizeof(uint64_t);
@@ -116,7 +75,7 @@ vector<string> readProgram(string filename)
 {
 	vector<string> text; // Contains parsed program.
 	ifstream program;
-	program.open (filename);
+	program.open(filename);
 
 	while(!program.eof())
 	{
@@ -137,6 +96,7 @@ vector<string> readProgram(string filename)
 	return text;
 }
 
+// Creates an unique ID used by a PCB.
 unsigned int createId(unordered_set<unsigned int> *pids)
 {
 	unsigned int max = numeric_limits<unsigned int>::max();
@@ -158,24 +118,45 @@ unsigned int createId(unordered_set<unsigned int> *pids)
 	return id;
 }
 
-
-
+//
 Pcb createPCB(string filename, size_t numRegisters, unordered_set<unsigned int> *pids)
 {
 	// Initializes a Process Control Block using a "program" (.txt) file.
 	unsigned int id = createId(pids);
 	vector<string> program = readProgram(filename);
 	string delim = ":";
-	string name = delimitValue(program.at(0), delim);
-	size_t burst = stoi(delimitValue(program.at(1), delim));
-	uint64_t memory = stoi(delimitValue(program.at(2), delim));
+	bool second = true;
+	string name = getValue(program.at(0), second, delim);
+	size_t burst = stoi(getValue(program.at(1), second, delim));
+	uint64_t memory = stoi(getValue(program.at(2), second, delim));
 	program.erase(program.begin(), program.begin() + 3);
 	program.shrink_to_fit();
 
 	return Pcb(id, name, burst, memory, program, numRegisters);
 }
 
+// Loads initial programs into hard drive.
+void bootstrap(HardDrive harddrive)
+{
+	/*
+	uint64_t block;
+	uint64_t base = 0;
+	uint64_t offset = 0;
+	vector<string> program;
 
+	// Loads Output Processes function into hard drive.
+	block = harddrive.getFreeBlock();
+	base = block * SIZE_BLOCK;
+	harddrive.write(base, SECTION);
+	++address;
+	harddrive.write(address, OUT);
+	++address;
+	harddrive.write(address, SECTION);
+	++address;
+	*/
+}
+
+//
 void close(int error)
 {
 	switch(error)
@@ -188,6 +169,10 @@ void close(int error)
 			cout << "Error allocating memory" << endl;
 			break;
 
+		case 2:
+			cout << "Error creating hard drive space" << endl;
+			break;
+
 		default:
 			cout << "Unknown error occurred!" << endl;
 	}
@@ -195,130 +180,44 @@ void close(int error)
 	exit(0);
 }
 
-
+//
 int main()
 {
-	/*
-	 * states:
-	 * NEW – The program or process is being created or loaded (but not yet in memory).
-	 * READY – The program is loaded into memory and is waiting to run on the CPU.
-	 * RUN – Instructions are being executed (or simulated).
-	 * WAIT (BLOCKED) – The program is waiting for some event to occur (such as an I/O completion).
-	 * EXIT – The  program  has  finished  execution  on  the  CPU  (all  instructions  and I/O complete) and leaves memory.
-	*/
-	#define SIZE_MEMORY_MAIN 4294967296 // Represents size of main memory in bytes (4 GiB).
-	#define SIZE_MEMORY_VIRTUAL 6442450944 // Represents size of virtual memory in bytes (6 GiB).
-	#define SIZE_BACKING_STORE 1099511627776 // Represents size of backing store in bytes (1 TiB).
-	#define SIZE_CACHE_CPU 1024 // Represents size of CPU cache in bytes (1 KiB).
-	#define SIZE_BLOCK 4194304 // Represents size of paging block in bytes (4 MiB).
-
 	// Main Memory
 	Memory memoryMain = Memory(SIZE_MEMORY_MAIN); // @suppress("Ambiguous problem")
-
 	// Tests memory for allocation.
 	if (!memoryMain.memorySet)
 	{
 		close(1);
 	}
-
 	Memory *ptrMain = &memoryMain; // Points to memoryMain.
+	uint64_t spaceMain = memoryMain.getCapacity();
 
-	uint64_t spaceMain = getAddressSpace(SIZE_MEMORY_MAIN); // Contains 2^29 space.
-	cout << "main address space: " << spaceMain;
-	cout << " bytes" << endl;
+	// Virtual Memory
+	uint64_t spaceVirtual = getAddressSpace(SIZE_MEMORY_VIRTUAL);
 
-	uint64_t spaceVirtual = getAddressSpace(SIZE_MEMORY_VIRTUAL); // Contains 2^30 space.
-	cout << "virtual address space: " << spaceVirtual;
-	cout << " bytes" << endl;
-
-	struct _test
-	{
-		int datum { 0 };
-	};
-
-	_test *test1 = new _test;
-	test1->datum = 1;
-
-	_test *test2 = new _test;
-	test2->datum = 2;
-
-	_test *test3 = new _test;
-	test3->datum = 3;
-
-	_test *test4 = new _test;
-	test4->datum = 4;
-
-	LinkedList<_test> linked = LinkedList<_test>();
-	linked.add(test1);
-	linked.add(test2);
-	linked.add(test3);
-
-	_test *test5 = linked.getStruct(1);
-
-	cout << "test1: " << test1->datum << endl;
-	cout << "test2: " << test2->datum << endl;
-	cout << "test3: " << test3->datum << endl;
-	cout << "test4: " << test4->datum << endl;
-
-	if (test5 != 0)
-	{
-		cout << "test5: " << test5->datum << endl;
-	}
-	else
-	{
-		cout << "fail" << endl;
-	}
-
-	linked.fill(test4, 1);
-
-	test5 = linked.getStruct(0);
-	cout << "filled test5: " << test5->datum << endl;
-	test5 = linked.getStruct(1);
-	cout << "filled test5: " << test5->datum << endl;
-	test5 = linked.getStruct(2);
-	cout << "filled test5: " << test5->datum << endl;
-
-
-	delete(test1);
-	delete(test2);
-	delete(test3);
-	delete(test4);
-
-	/*
 	// Backing Store (Hard Disk Drive)
-	Harddrive hdd = Harddrive(SIZE_BACKING_STORE);
-	uint64_t spaceHarddrive = getAddressSpace(SIZE_BACKING_STORE); // 2^40 space
-	cout << "harddrive address space: " << spaceHarddrive << endl;
-	*/
+	fstream harddrive;
+	HardDrive hdd = HardDrive(harddrive, SIZE_BACKING_STORE, SIZE_BLOCK);
+	// Tests hard drive for creation.
+	if (!hdd.diskSet)
+	{
+		close(2);
+	}
 
-	/*
+	bootstrap(hdd); // Writes built-in functions to hard drive.
+
 	// Memory Management Unit
 	Mmu mmu = Mmu(SIZE_BLOCK, spaceMain, spaceVirtual);
-	uint64_t numFrames = mmu.getNumFrames();
-	uint64_t numPages = mmu.getNumPages();
-	cout << "frames (physical): " << numFrames << endl;
-	cout << "pages (virtual): " << numPages << endl;
-	*/
 
-	/*
 	// Central Processing Unit
 	Cpu cpu = Cpu(SIZE_CACHE_CPU, ptrMain);
 	int rCount = cpu.R_COUNT; // Holds number of registers.
-	*/
 
 	// Process Queues
 	vector<Pcb> qJob;
 	vector<Pcb> qReady;
 	vector<Pcb> qDeviceIO;
-
-	// Establishes operation codes that can be used.
-	enum
-	{
-		OP_CALC = 0,
-		OP_IO,
-		OP_YIELD,
-		OP_OUT
-	};
 
 	unordered_set<unsigned int> pids; // Holds set of all current Process IDs being used.
 	unordered_set<unsigned int> *ptrPids = &pids;
@@ -330,11 +229,10 @@ int main()
 	cout << endl;
 	*/
 
-	/*
-	string filename = "os_programs\\Text Processor.txt";
+	SchedulerLong jobScheduler = SchedulerLong(ptrMain);
+	string filename = "user_programs\\Text Processor.txt";
 	Pcb pcb = createPCB(filename, rCount, ptrPids);
-	qJob.push_back(pcb);*/
+	qJob.push_back(pcb);
 
-	//close();
 	return 0;
 };

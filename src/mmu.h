@@ -1,6 +1,9 @@
 /*
  * mmu.h
  * Memory Management Unit
+ *
+ * Jedidiah Pottle
+ * CMSC312
  */
 
 #ifndef MMU_H_
@@ -34,15 +37,15 @@ class Mmu
 		Mmu(uint64_t blockSize, uint64_t physicalSpace, uint64_t logicalSpace);
 		uint64_t getNumFrames();
 		uint64_t getNumPages();
-		void addPageData(uint64_t pageNum, uint64_t baseAddress);
+		void addPageData(uint64_t pageNum);
 		void removePageData(uint64_t pageNum);
 
 	private:
 		void setNumFrames(uint64_t physicalSpace, uint64_t blockSize);
 		void setNumPages(uint64_t logicalSpace, uint64_t blockSize);
 		void initPageTable(uint64_t size);
-		void addFreeFrame(uint64_t pageNum);
-		void removeFreeFrame(uint64_t pageNum);
+		void addFreeFrame(uint64_t frameNum);
+		uint64_t getFreeFrame();
 };
 
 #endif /* MMU_H_ */

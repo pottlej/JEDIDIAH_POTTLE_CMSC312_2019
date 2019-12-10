@@ -1,13 +1,15 @@
 /*
  * pcb.cpp
  * Process Control Block
+ *
+ * Jedidiah Pottle
+ * CMSC312
  */
 #include <algorithm>
 #include <iostream>
 #include "pcb.h"
 using namespace std;
 
-// Public Members
 Pcb::Pcb(unsigned int id, string name, size_t burst, uint64_t memory, vector<string> text, size_t numRegisters)
 {
 	setId(id);
@@ -31,6 +33,26 @@ void Pcb::setId(unsigned int id)
 unsigned int Pcb::getId()
 {
 	return id;
+}
+
+void Pcb::setBaseAddress(uint64_t base)
+{
+	baseAddress = base;
+}
+
+uint64_t Pcb::getBaseAddress()
+{
+	return baseAddress;
+}
+
+void Pcb::setLimitAddress(uint64_t limit)
+{
+	limitAddress = limit;
+}
+
+uint64_t Pcb::getLimitAddress()
+{
+	return limitAddress;
 }
 
 void Pcb::setState(unsigned short s)
@@ -211,9 +233,6 @@ uint64_t Pcb::heapFront()
 	return heap.front();
 }
 
-
-
-// Private Members
 void Pcb::initRegisters(size_t count)
 {
 	registers = (uint64_t*) calloc(count, sizeof(uint64_t));

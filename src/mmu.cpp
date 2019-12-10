@@ -1,6 +1,9 @@
 /*
  * mmu.cpp
  * Memory Management Unit
+ *
+ * Jedidiah Pottle
+ * CMSC312
  */
 #include <algorithm>
 #include <cmath>
@@ -8,7 +11,6 @@
 #include "mmu.h"
 using namespace std;
 
-// Public members
 Mmu::Mmu(uint64_t blockSize, uint64_t physicalSpace, uint64_t logicalSpace)
 {
 	setNumFrames(physicalSpace, blockSize);
@@ -26,7 +28,7 @@ uint64_t Mmu::getNumPages()
 	return numPages;
 }
 
-void Mmu::addPageData(uint64_t pageNum, uint64_t baseAddress)
+void Mmu::addPageData(uint64_t pageNum)
 {
 	_page *page = pageTable;
 
@@ -35,9 +37,7 @@ void Mmu::addPageData(uint64_t pageNum, uint64_t baseAddress)
 		page = page->next;
 	}
 
-	page->baseAddress = baseAddress;
-
-	removeFreeFrame(pageNum);
+	page->baseAddress = getFreeFrame();
 }
 
 void Mmu::removePageData(uint64_t pageNum)
@@ -52,17 +52,19 @@ void Mmu::removePageData(uint64_t pageNum)
 	page->isVal = 0;
 	page->isRef = 0;
 	page->isMod = 0;
-	page->baseAddress = 0;
 
-	addFreeFrame(pageNum);
+	addFreeFrame(page->baseAddress);
+	page->baseAddress = 0;
 }
 
-
-
-//Private members
 void Mmu::setNumFrames(uint64_t physicalSpace, uint64_t blockSize)
 {
 	numFrames = physicalSpace / blockSize;
+
+	for (uint64_t i = 0; i < numFrames; i++)
+	{
+		addFreeFrame(i);
+	}
 }
 
 void Mmu::setNumPages(uint64_t logicalSpace, uint64_t blockSize)
@@ -83,21 +85,21 @@ void Mmu::initPageTable(uint64_t size)
 
 		current->next = newPage; // Sets next page.
 		current = current->next; // Goes to next page.
+
 		++count;
 	}
 }
 
-void Mmu::addFreeFrame(uint64_t pageNum)
+void Mmu::addFreeFrame(uint64_t frameNum)
 {
-	freeFrames.insert(pageNum);
+	freeFrames.insert(frameNum);
 }
 
-void Mmu::removeFreeFrame(uint64_t pageNum)
+uint64_t Mmu::getFreeFrame()
 {
-	set<uint64_t, less<uint64_t>>::iterator found = find(freeFrames.begin(), freeFrames.end(), pageNum);
-	if (found != freeFrames.end())
-	{
-		freeFrames.erase(found);
-	}
+	set<uint64_t, less<uint64_t>>::iterator element = freeFrames.begin();
+	freeFrames.erase(*element);
+
+	return *element;
 }
 

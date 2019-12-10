@@ -1,6 +1,9 @@
 /*
  * pcb.h
  * Process Control Block
+ *
+ * Jedidiah Pottle
+ * CMSC312
  */
 
 #ifndef PCB_H_
@@ -19,6 +22,8 @@ class Pcb
 		Pcb *parent { 0 };
 		std::list<Pcb> childList; // List of children spawned by this process.
 		unsigned int id { 0 };
+		uint64_t baseAddress { 0 };
+		uint64_t limitAddress { 0 };
 		unsigned short state { 0 };
 		bool critSection { 0 }; // Sets whether or not the process is in its critical section.
 		uint64_t pc { 0 }; // Program Counter.
@@ -39,6 +44,10 @@ class Pcb
 		~Pcb();
 		void setId(unsigned int id);
 		unsigned int getId();
+		void setBaseAddress(uint64_t base);
+		uint64_t getBaseAddress();
+		void setLimitAddress(uint64_t limit);
+		uint64_t getLimitAddress();
 		void setState(unsigned short s);
 		unsigned short getState();
 		void setCritSection(bool value);

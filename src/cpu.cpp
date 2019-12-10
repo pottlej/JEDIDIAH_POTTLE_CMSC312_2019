@@ -1,13 +1,15 @@
 /*
  * cpu.cpp
  * Central Processing Unit
+ *
+ * Jedidiah Pottle
+ * CMSC312
  */
 #include <algorithm>
 #include <cmath>
 #include "cpu.h"
 using namespace std;
 
-// Public Members
 Cpu::Cpu(size_t cacheSize, Memory *memoryMain)
 {
 	setCacheSize(cacheSize);
@@ -45,8 +47,6 @@ uint64_t Cpu::readMemory(uint64_t address)
 	return memoryMain->read(address);
 }
 
-
-//Private Members
 void Cpu::setCacheSize(size_t size)
 {
 	this->cacheSize = size;

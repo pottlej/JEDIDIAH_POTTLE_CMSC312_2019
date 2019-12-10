@@ -1,6 +1,9 @@
 /*
  * cpu.h
  * Central Processing Unit
+ *
+ * Jedidiah Pottle
+ * CMSC312
  */
 #ifndef CPU_H_
 #define CPU_H_
@@ -31,7 +34,7 @@ class Cpu
 		unsigned int *registers { 0 };
 		std::size_t cacheSize { 0 };
 		std::unordered_map<uint64_t, uint64_t> cache; // Translation Look-aside Buffer (TLB)
-		Memory *memoryMain;
+		Memory *memoryMain { 0 };
 
 	public:
 		Cpu(std::size_t cacheSize, Memory *memoryMain);

@@ -1,13 +1,13 @@
 /*
  * memory.cpp
+ *
+ * Jedidiah Pottle
+ * CMSC312
  */
 #include <iostream>
 #include <cmath>
 #include "memory.h"
 using namespace std;
-
-//Public members
-Memory::Memory(){}
 
 Memory::Memory(uint64_t size)
 {
@@ -17,7 +17,12 @@ Memory::Memory(uint64_t size)
 Memory::~Memory()
 {
 	free(memory);
-	memorySet = 0;
+	memorySet = false;
+}
+
+uint64_t Memory::getCapacity()
+{
+	return capacity;
 }
 
 // Writes an instruction to an address location.
@@ -32,21 +37,19 @@ uint64_t Memory::read(uint64_t address)
 	return memory[address];
 }
 
-
-
-// Private members
 void Memory::setMemory(uint64_t size)
 {
 	uint64_t numAddresses = size / sizeof(uint64_t);
+	capacity = numAddresses;
 
 	memory = (uint64_t*) malloc(numAddresses);
-	memorySet = 1;
+	memorySet = true;
 
 	// Tests memory for allocation.
 	if (memory == 0)
 	{
 		free(memory);
-		memorySet = 0;
+		memorySet = false;
 	}
 }
 
